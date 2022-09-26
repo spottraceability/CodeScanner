@@ -19,6 +19,7 @@ extension CodeScannerView {
         var didFinishScanning = false
         var lastTime = Date(timeIntervalSince1970: 0)
         private let showViewfinder: Bool
+        private var isScannerPaused: Bool
         
         private var isGalleryShowing: Bool = false {
             didSet {
@@ -29,14 +30,18 @@ extension CodeScannerView {
             }
         }
 
-        public init(showViewfinder: Bool = false, parentView: CodeScannerView) {
+        public init(showViewfinder: Bool = false, isScannerPaused: Bool, parentView: CodeScannerView) {
             self.parentView = parentView
             self.showViewfinder = showViewfinder
+            self.isScannerPaused = isScannerPaused
+            
             super.init(nibName: nil, bundle: nil)
         }
 
         required init?(coder: NSCoder) {
             self.showViewfinder = false
+            self.isScannerPaused = false
+            
             super.init(coder: coder)
         }
         
@@ -390,7 +395,7 @@ extension CodeScannerView {
         }
         #endif
         
-        func updateViewController(isTorchOn: Bool, isGalleryPresented: Bool, isManualCapture: Bool, isManualSelect: Bool) {
+        func updateViewController(isTorchOn: Bool, isScannerPaused: Bool, isGalleryPresented: Bool, isManualCapture: Bool, isManualSelect: Bool) {
             if let backCamera = AVCaptureDevice.default(for: AVMediaType.video),
                backCamera.hasTorch
             {
@@ -402,6 +407,8 @@ extension CodeScannerView {
             if isGalleryPresented && !isGalleryShowing {
                 openGallery()
             }
+            
+            self.isScannerPaused = isScannerPaused
             
             #if !targetEnvironment(simulator)
             showManualCaptureButton(isManualCapture)
@@ -426,6 +433,7 @@ extension CodeScannerView {
                 guard let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject else { return }
                 guard let stringValue = readableObject.stringValue else { return }
                 guard didFinishScanning == false else { return }
+                guard isScannerPaused == false else { return }
                 let result = ScanResult(string: stringValue, type: readableObject.type)
 
                 switch parentView.scanMode {

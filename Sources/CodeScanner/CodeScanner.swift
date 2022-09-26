@@ -66,6 +66,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
     public var simulatedData = ""
     public var shouldVibrateOnSuccess: Bool
     public var isTorchOn: Bool
+    public var isScannerPaused: Bool
     public var isGalleryPresented: Binding<Bool>
     public var videoCaptureDevice: AVCaptureDevice?
     public var completion: (Result<ScanResult, ScanError>) -> Void
@@ -79,6 +80,7 @@ public struct CodeScannerView: UIViewControllerRepresentable {
         simulatedData: String = "",
         shouldVibrateOnSuccess: Bool = true,
         isTorchOn: Bool = false,
+        isScannerPaused: Bool = false,
         isGalleryPresented: Binding<Bool> = .constant(false),
         videoCaptureDevice: AVCaptureDevice? = AVCaptureDevice.default(for: .video),
         completion: @escaping (Result<ScanResult, ScanError>) -> Void
@@ -91,19 +93,21 @@ public struct CodeScannerView: UIViewControllerRepresentable {
         self.simulatedData = simulatedData
         self.shouldVibrateOnSuccess = shouldVibrateOnSuccess
         self.isTorchOn = isTorchOn
+        self.isScannerPaused = isScannerPaused
         self.isGalleryPresented = isGalleryPresented
         self.videoCaptureDevice = videoCaptureDevice
         self.completion = completion
     }
 
     public func makeUIViewController(context: Context) -> ScannerViewController {
-        return ScannerViewController(showViewfinder: showViewfinder, parentView: self)
+        return ScannerViewController(showViewfinder: showViewfinder, isScannerPaused: isScannerPaused, parentView: self)
     }
 
     public func updateUIViewController(_ uiViewController: ScannerViewController, context: Context) {
         uiViewController.parentView = self
         uiViewController.updateViewController(
             isTorchOn: isTorchOn,
+            isScannerPaused: isScannerPaused,
             isGalleryPresented: isGalleryPresented.wrappedValue,
             isManualCapture: scanMode == .manual,
             isManualSelect: manualSelect
